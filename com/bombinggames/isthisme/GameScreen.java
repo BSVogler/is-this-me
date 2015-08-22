@@ -30,7 +30,8 @@ class GameScreen implements Screen {
 	private final Vector2 p1Pos = new Vector2(50f, 50f);
 	private float walkingspeed = 1/10f;
 	private final Music music = Gdx.audio.newMusic(Gdx.files.internal("com/bombinggames/isthisme/music/music1.mp3"));
-	private final Sound attackSound;
+	private final Sound attackSound = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/hit.wav"));
+	private final Sound huhSound = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/huh.wav"));
 	private final ArrayList<Dude> dudeList = new ArrayList<>(10);
 	private float hitTimer = 0f;
 	private boolean hitting = false;
@@ -55,7 +56,6 @@ class GameScreen implements Screen {
 		
 		music.setLooping(true);
 		
-		attackSound = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/hit.wav"));
 		
 		dudeList.add(new Dude());
 	}
@@ -156,6 +156,7 @@ class GameScreen implements Screen {
 			impact = false;
 			hitTimer = 0;//reset
 			hitting = true;
+			huhSound.play();
 		}
 	}
 	

@@ -25,13 +25,17 @@ import java.util.ArrayList;
 class GameScreen implements Screen {
 	private final Sprite background = new Sprite(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/background.png")));
 	private final SpriteBatch batch = new SpriteBatch();
-	private final Animation mainChar;
+	private final Animation walkinAnimation;
 	private float time;
 	private final Vector2 p1Pos = new Vector2(50f, 50f);
 	private float walkingspeed = 1/10f;
 	private final Music music = Gdx.audio.newMusic(Gdx.files.internal("com/bombinggames/isthisme/music/music1.mp3"));
-	private Sound attackSound;
+	private final Sound attackSound;
 	private final ArrayList<Dude> dudeList = new ArrayList<>(10);
+	private float hitTimer = 0f;
+	private boolean hitting = false;
+	private final Animation hitAnimation;
+	private boolean impact;
 
 	public GameScreen(IsThisMe aThis) {
 		TextureRegion[] anim = new TextureRegion[]{
@@ -39,8 +43,15 @@ class GameScreen implements Screen {
 			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/w2.png"))),
 			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/w3.png")))
 		};
-		mainChar = new Animation(300f, anim);
-		mainChar.setPlayMode(Animation.PlayMode.LOOP);
+		walkinAnimation = new Animation(300f, anim);
+		walkinAnimation.setPlayMode(Animation.PlayMode.LOOP);
+		
+		anim = new TextureRegion[]{
+			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/h1.png"))),
+			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/h2.png")))
+		};
+		hitAnimation = new Animation(300f, anim);
+		hitAnimation.setPlayMode(Animation.PlayMode.NORMAL);
 		
 		music.setLooping(true);
 		
@@ -57,32 +68,43 @@ class GameScreen implements Screen {
 	@Override
 	public void render(float delta) {
 		delta*=1000f;//to ms
-		if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)){
-			p1Pos.x += delta*walkingspeed;
-		}
-		
-		if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)){
-			p1Pos.x -= delta*walkingspeed;
-		}
-		
-		if (Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)){
-			p1Pos.y += delta*walkingspeed;
+		if (!hitting) {
+			if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)){
+				p1Pos.x += delta*walkingspeed;
+			}
 
-		}
-		
-		if (Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)){
-			p1Pos.y -= delta*walkingspeed;
-		}
-		
-		if (
-			Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.LEFT)||Gdx.input.isKeyPressed(Keys.RIGHT) ||
-			Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.A)||Gdx.input.isKeyPressed(Keys.D)
+			if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)){
+				p1Pos.x -= delta*walkingspeed;
+			}
+
+			if (Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)){
+				p1Pos.y += delta*walkingspeed;
+
+			}
+
+			if (Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)){
+				p1Pos.y -= delta*walkingspeed;
+			}
+
+			if (
+				Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.LEFT)||Gdx.input.isKeyPressed(Keys.RIGHT) ||
+				Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.A)||Gdx.input.isKeyPressed(Keys.D)
 			) {
-			time += delta;
+				time += delta;
+			}
 		}
+		
+		if (hitting)
+			hitTimer += delta;
+		
+		if (hitTimer > hitAnimation.getAnimationDuration())
+			hitting = false;
+		
+		if (hitTimer > hitAnimation.getFrameDuration())
+			impact();
 		
 		if (Gdx.input.isKeyPressed(Keys.SPACE)){
-			attack();
+			startAttack();
 		}
 		
 		if (p1Pos.y > 200)
@@ -97,7 +119,11 @@ class GameScreen implements Screen {
 		//render
 		batch.begin();
 		background.draw(batch);
-		batch.draw(mainChar.getKeyFrame(time), p1Pos.x, p1Pos.y);
+		if (hitting){
+			batch.draw(hitAnimation.getKeyFrame(hitTimer), p1Pos.x, p1Pos.y);
+		} else {
+			batch.draw(walkinAnimation.getKeyFrame(time), p1Pos.x, p1Pos.y);
+		}
 		
 		for (Dude dude : dudeList) {
 			dude.draw(batch);
@@ -125,8 +151,23 @@ class GameScreen implements Screen {
 	public void dispose() {
 	}
 	
-	protected void attack(){
-		attackSound.play();
+	protected void startAttack(){
+		if (!hitting) {
+			impact = false;
+			hitTimer = 0;//reset
+			hitting = true;
+		}
+	}
+	
+	protected void impact(){
+		if (!impact) {
+			impact = true;
+			attackSound.play();
+			for (Dude dude : dudeList) {
+				if (dude.getPosition().epsilonEquals(p1Pos, 50))
+					dude.hit();
+			}
+		}
 	}
 	
 }

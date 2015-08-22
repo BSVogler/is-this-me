@@ -29,7 +29,7 @@ class GameScreen implements Screen {
 	private final Animation walkinAnimation;
 	private float time;
 	private final Vector2 p1Pos = new Vector2(50f, 50f);
-	private float walkingspeed = 1/10f;
+	private float walkingspeed = 1/1f;
 	private final Music music = Gdx.audio.newMusic(Gdx.files.internal("com/bombinggames/isthisme/music/music1.mp3"));
 	private final Sound attackSound = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/hit.wav"));
 	private final Sound huhSound = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/huh.wav"));
@@ -41,8 +41,11 @@ class GameScreen implements Screen {
 	private boolean impact;
 	private Sprite overlay = new Sprite(new Texture("com/bombinggames/isthisme/graphics/overlay.png"));
 	private long fiepInstance;
+	private final IsThisMe game;
 
-	public GameScreen() {
+	public GameScreen(IsThisMe game) {
+		this.game = game;
+		
 		TextureRegion[] anim = new TextureRegion[]{
 			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/w1.png"))),
 			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/w2.png"))),
@@ -118,6 +121,12 @@ class GameScreen implements Screen {
 		if (p1Pos.y < 10)
 			p1Pos.y = 10;
 		
+		if (p1Pos.x > 1280) {
+			this.dispose();
+			game.setScreen(new Blowjob(game));
+			return;
+		}
+		
 		
 		Dude nearestAliveDude = dudeList.get(0);
 		if (!nearestAliveDude.isAlive()) nearestAliveDude = null;
@@ -180,6 +189,11 @@ class GameScreen implements Screen {
 
 	@Override
 	public void dispose() {
+		fiep.stop();
+		fiep.dispose();
+		music.stop();
+		music.dispose();
+		batch.dispose();
 	}
 	
 	protected void startAttack(){

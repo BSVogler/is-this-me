@@ -14,12 +14,12 @@ import com.badlogic.gdx.math.Vector2;
 public class Dude {
 	private static final Sound impact = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/impact.wav"));
 	private static final Texture dudeTexture = new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/dude.png"));
-	private static final Texture corpseTexture = new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/splatter.png"));
+	private static final Texture corpseTexture = new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/corpse.png"));
 	private final Sprite sprite = new Sprite(dudeTexture);
 	private boolean alive = true;
 		
-	public Dude() {
-		sprite.setPosition(1200, (float) (Math.random()*50+50));
+	public Dude(float x, float y) {
+		sprite.setPosition(x, y);
 	}
 	
 	/**

@@ -6,6 +6,7 @@
 package com.bombinggames.isthisme;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
@@ -32,14 +33,16 @@ class GameScreen implements Screen {
 	private final Music music = Gdx.audio.newMusic(Gdx.files.internal("com/bombinggames/isthisme/music/music1.mp3"));
 	private final Sound attackSound = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/hit.wav"));
 	private final Sound huhSound = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/huh.wav"));
+	private final Sound fiep = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/fiep.wav"));
 	private final ArrayList<Dude> dudeList = new ArrayList<>(10);
 	private float hitTimer = 0f;
 	private boolean hitting = false;
 	private final Animation hitAnimation;
 	private boolean impact;
 	private Sprite overlay = new Sprite(new Texture("com/bombinggames/isthisme/graphics/overlay.png"));
+	private long fiepInstance;
 
-	public GameScreen(IsThisMe aThis) {
+	public GameScreen() {
 		TextureRegion[] anim = new TextureRegion[]{
 			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/w1.png"))),
 			new TextureRegion(new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/w2.png"))),
@@ -65,6 +68,7 @@ class GameScreen implements Screen {
 	@Override
 	public void show() {
 		music.play();
+		fiepInstance = fiep.loop(0.0f);
 	}
 
 	@Override
@@ -105,7 +109,7 @@ class GameScreen implements Screen {
 		if (hitTimer > hitAnimation.getFrameDuration())
 			impact();
 		
-		if (Gdx.input.isKeyPressed(Keys.SPACE)){
+		if (Gdx.input.isKeyPressed(Keys.SPACE) || Gdx.input.isButtonPressed(Buttons.LEFT)){
 			startAttack();
 		}
 		
@@ -114,9 +118,31 @@ class GameScreen implements Screen {
 		if (p1Pos.y < 10)
 			p1Pos.y = 10;
 		
+		
+		Dude nearestAliveDude = dudeList.get(0);
+		if (!nearestAliveDude.isAlive()) nearestAliveDude = null;
 		for (Dude dude : dudeList) {
 			dude.update(delta);
+			if (
+				dude.isAlive()
+				&& (nearestAliveDude == null || dude.getPosition().dst2(p1Pos) < nearestAliveDude.getPosition().dst2(p1Pos))
+			)
+				nearestAliveDude = dude;
 		}
+		float fiepVolume = 0.01f;
+		if (nearestAliveDude ==null)
+			fiep.setVolume(fiepInstance, 0);
+		else {
+			float divisor = (nearestAliveDude.getPosition().dst(p1Pos)-40);
+			if (divisor>0)
+				fiepVolume = 1f/divisor;
+			else
+				fiepVolume = 1;
+			if (fiepVolume>1) fiepVolume = 1;
+			if (fiepVolume<0.01f) fiepVolume = 0.01f;
+			fiep.setVolume(fiepInstance, fiepVolume);
+		}
+		music.setVolume(1f/(fiepVolume/2+0.5f)-0.8f);
 		
 		//render
 		batch.begin();
@@ -168,7 +194,7 @@ class GameScreen implements Screen {
 	protected void impact(){
 		if (!impact) {
 			impact = true;
-			attackSound.play();
+			attackSound.play(0.6f);
 			for (Dude dude : dudeList) {
 				if (dude.getPosition().epsilonEquals(p1Pos, 50))
 					dude.hit();

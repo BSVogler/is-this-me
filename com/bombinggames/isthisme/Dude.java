@@ -45,4 +45,8 @@ public class Dude {
 	public Vector2 getPosition(){
 		return new Vector2(sprite.getX(), sprite.getY());
 	}
+
+	boolean isAlive() {
+		return alive;
+	}
 }

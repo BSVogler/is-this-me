@@ -59,7 +59,7 @@ public class IsThisMe extends Game{
 
 	@Override
 	public void create() {
-		setScreen(new GameScreen(this));
+		setScreen(new WarningScreen(this));
 	}
 	
 }

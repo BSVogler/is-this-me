@@ -58,7 +58,8 @@ class GameScreen implements Screen {
 		music.setLooping(true);
 		
 		
-		dudeList.add(new Dude());
+		dudeList.add(new Dude(1200, (float) (Math.random()*50+50)));
+		dudeList.add(new Dude(1500, (float) (Math.random()*50+50)));
 	}
 
 	@Override

@@ -37,6 +37,7 @@ class GameScreen implements Screen {
 	private boolean hitting = false;
 	private final Animation hitAnimation;
 	private boolean impact;
+	private Sprite overlay = new Sprite(new Texture("com/bombinggames/isthisme/graphics/overlay.png"));
 
 	public GameScreen(IsThisMe aThis) {
 		TextureRegion[] anim = new TextureRegion[]{
@@ -128,6 +129,9 @@ class GameScreen implements Screen {
 		for (Dude dude : dudeList) {
 			dude.draw(batch);
 		}
+		
+		overlay.setColor(0, (float) (1-Math.random()*0.5f), (float) (1-Math.random()*0.5f), (float) (1-Math.random()*0.3f));
+		overlay.draw(batch);
 		batch.end();
 	}
 

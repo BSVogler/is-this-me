@@ -18,12 +18,12 @@ import com.badlogic.gdx.math.Vector2;
  */
 public class Intro implements Screen {
 	private final SpriteBatch batch = new SpriteBatch();
-	private Sprite bg = new Sprite(new Texture("com/bombinggames/isthisme/graphics/introBg.png"));
+	private final Sprite bg = new Sprite(new Texture("com/bombinggames/isthisme/graphics/introBg.png"));
 	private final IsThisMe game;
 	private final Sound intro = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/intro.ogg"));
 	private float timer;
 	private final Animation flyAnimation;
-	private Vector2 flyPos = new Vector2(0, 150);
+	private final Vector2 flyPos = new Vector2(0, 150);
 
 	public Intro(IsThisMe game) {
 		this.game = game;

@@ -11,6 +11,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -39,10 +40,11 @@ class GameScreen implements Screen {
 	private boolean hitting = false;
 	private final Animation hitAnimation;
 	private boolean impact;
-	private Sprite overlay = new Sprite(new Texture("com/bombinggames/isthisme/graphics/overlay.png"));
+	private final Sprite overlay = new Sprite(new Texture("com/bombinggames/isthisme/graphics/overlay.png"));
 	private long fiepInstance;
 	private final IsThisMe game;
 	
+	//death
 	private boolean deathmode=false;
 	private float flashTimer = 200;
 	private Sprite stream;
@@ -53,6 +55,7 @@ class GameScreen implements Screen {
 	private boolean shakeWallRight = true;
 	private int copsKill;
 	private boolean escape;
+	private final Sound scream = Gdx.audio.newSound(Gdx.files.internal("com/bombinggames/isthisme/sound/scream.mp3"));
 
 	public GameScreen(IsThisMe game) {
 		this.game = game;
@@ -71,6 +74,7 @@ class GameScreen implements Screen {
 		};
 		hitAnimation = new Animation(300f, anim);
 		hitAnimation.setPlayMode(Animation.PlayMode.NORMAL);
+		overlay.setColor(0, 0, 0, 1);
 	}
 	
 	public void setupDeath(){
@@ -154,6 +158,15 @@ class GameScreen implements Screen {
 		if (deathmode && p1Pos.x > 850)
 			p1Pos.x = 850;
 		
+		if (deathmode && p1Pos.y>650 && p1Pos.y<900){
+			scream.play();
+			p1Pos.y=900;
+		}
+		
+		if (p1Pos.y > 1900){
+			Gdx.app.exit();
+		}
+		
 		if (p1Pos.x > 1280) {
 			fiep.stop();
 			music.stop();
@@ -162,7 +175,7 @@ class GameScreen implements Screen {
 			return;
 		}
 		
-		if (walls!=null) {
+		if (walls!=null && p1Pos.y<1000) {
 			if (shakeWallRight)
 				shakeWall += delta/30f;
 			else {
@@ -197,9 +210,9 @@ class GameScreen implements Screen {
 				nearestAliveDude = dude;
 		}
 		float fiepVolume = 0.01f;
-		if (nearestAliveDude ==null)
+		if (nearestAliveDude ==null) {
 			fiep.setVolume(fiepInstance, 0);
-		else {
+		} else {
 			float divisor = (nearestAliveDude.getPosition().dst(p1Pos)-40);
 			if (divisor>0)
 				fiepVolume = 1f/divisor;
@@ -210,6 +223,9 @@ class GameScreen implements Screen {
 			fiep.setVolume(fiepInstance, fiepVolume);
 		}
 		music.setVolume(1f/(fiepVolume/2+0.5f)-0.8f);
+		Color rage = new Color(0, (float) (1-Math.random()*0.5f), (float) (1-Math.random()*0.5f), 1).mul(fiepVolume+0.2f);
+		rage.a = (float) (1-Math.random()*0.3f);
+		overlay.setColor(rage);
 		
 		//render
 		batch.begin();
@@ -221,14 +237,14 @@ class GameScreen implements Screen {
 		if (street!=null)
 			street.draw(batch);
 		
+		for (Dude dude : dudeList) {
+			dude.draw(batch);
+		}
+		
 		if (hitting){
 			batch.draw(hitAnimation.getKeyFrame(hitTimer), p1Pos.x, p1Pos.y);
 		} else {
 			batch.draw(walkinAnimation.getKeyFrame(time), p1Pos.x, p1Pos.y);
-		}
-		
-		for (Dude dude : dudeList) {
-			dude.draw(batch);
 		}
 		
 		if (walls!=null)
@@ -237,7 +253,6 @@ class GameScreen implements Screen {
 		if (flash!=null)
 			flash.draw(batch);
 		
-		overlay.setColor(0, (float) (1-Math.random()*0.5f), (float) (1-Math.random()*0.5f), (float) (1-Math.random()*0.3f));
 		overlay.draw(batch);
 		batch.end();
 	}
@@ -286,6 +301,7 @@ class GameScreen implements Screen {
 					copsKill++;
 					if (deathmode && copsKill==2){
 						escape = true;
+						walkingspeed = 1/5f;
 					}
 				}
 			}

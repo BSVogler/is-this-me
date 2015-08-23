@@ -17,8 +17,10 @@ public class Dude {
 	private static final Texture corpseTexture = new Texture(Gdx.files.internal("com/bombinggames/isthisme/graphics/corpse.png"));
 	private final Sprite sprite = new Sprite(dudeTexture);
 	private boolean alive = true;
+	private boolean deathmode = false;
 		
-	public Dude(float x, float y) {
+	public Dude(boolean deathmode, float x, float y) {
+		this.deathmode = deathmode;
 		sprite.setPosition(x, y);
 	}
 	
@@ -28,8 +30,13 @@ public class Dude {
 	 */
 	public void update(float dt){
 		//walk
-		if (alive)
-			sprite.setX(sprite.getX() - dt/20f);
+		if (alive) {
+			if (deathmode)
+				sprite.setY(sprite.getY() - dt/20f);
+			else 
+				sprite.setX(sprite.getX() - dt/20f);
+		}
+		
 	}
 
 	public void draw(Batch batch) {

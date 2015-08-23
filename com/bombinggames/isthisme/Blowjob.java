@@ -20,10 +20,11 @@ public class Blowjob implements Screen {
 	private final Sprite background = new Sprite(new Texture("com/bombinggames/isthisme/graphics/backgroundBJ.jpg"));
 	private final Sprite head = new Sprite(new Texture("com/bombinggames/isthisme/graphics/blowjobdude.png"));
 	private final Sprite guyWithDick = new Sprite(new Texture("com/bombinggames/isthisme/graphics/guyWithDick.png"));
-	private Sprite overlay = new Sprite(new Texture("com/bombinggames/isthisme/graphics/overlaysquared.png"));
+	private final Sprite overlay = new Sprite(new Texture("com/bombinggames/isthisme/graphics/overlaysquared.png"));
 	private float shake =-5;
 	private boolean shakeRight = true;
 	private final Music music = Gdx.audio.newMusic(Gdx.files.internal("com/bombinggames/isthisme/music/blowjob.mp3"));
+	private float amountmoved = 0;
 	
 	public Blowjob(IsThisMe game) {
 		this.game = game;
@@ -47,10 +48,12 @@ public class Blowjob implements Screen {
 		boolean moved = false;
 		if ((head.getX() < 100) && (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D))) {
 			head.setX(head.getX()+delta/5f);
+			amountmoved+=delta/5f;
 			moved = true;
 		}
 		if ((head.getX() > -50) && (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A))) {
 			head.setX(head.getX()-delta/5f);
+			amountmoved+=delta/5f;
 			moved = true;
 		}
 		
@@ -69,6 +72,14 @@ public class Blowjob implements Screen {
 		if (shake< -3) shakeRight=true;
 		guyWithDick.setRotation(shake);
 		overlay.rotate(delta/40f);
+		
+		if (amountmoved > 1200) {
+			dispose();
+			GameScreen screen = new GameScreen(game);
+			screen.setupDeath();
+			game.setScreen(screen);
+			return;
+		}
 		
 		//render
 		batch.begin();
